@@ -1,0 +1,43 @@
+# Contributor: Stuart Cardall <developer@it-offshore.co.uk>
+# Maintainer: Stuart Cardall <developer@it-offshore.co.uk>
+pkgname=lz4
+pkgver=1.10.0
+pkgrel=0
+pkgdesc="LZ4 is lossless compression algorithm with fast decoder @ multiple GB/s per core."
+url="https://github.com/lz4/lz4"
+arch="all"
+license="BSD-2-Clause AND GPL-2.0-or-later"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-libs $pkgname-tests:tests"
+source="$pkgname-$pkgver.tar.gz::https://github.com/lz4/lz4/archive/v$pkgver.tar.gz 
+        fix-qnx.patch"
+
+build() {
+    export CFLAGS="$CFLAGS -O3 -flto=auto"
+    export CPPFLAGS="$CPPFLAGS -O3 -flto=auto"
+    make PREFIX=/usr
+}
+
+package() {
+    make PREFIX=/usr DESTDIR="$pkgdir" install
+
+    (
+        cd tests/
+        rm -f ./*.c COPYING Makefile .gitignore
+    )
+    mkdir -p "$pkgdir"/usr/share/$pkgname
+    cp -rf tests "$pkgdir"/usr/share/$pkgname/
+}
+
+check() {
+    make PREFIX=/usr check > /dev/null
+}
+
+tests() {
+    pkgdesc="$pkgdesc (tests)"
+    amove usr/share/$pkgname
+}
+
+sha512sums="
+8c4ceb217e6dc8e7e0beba99adc736aca8963867bcf9f970d621978ba11ce92855912f8b66138037a1d2ae171e8e17beb7be99281fea840106aa60373c455b28  lz4-1.10.0.tar.gz
+1db27beb97a18e55d5f559b0bd8c777841614fd000a29339f007541458c53bbbf96182b9fbf61da465f177afd0d59b33bc01c913eb67a2cba643bed693632630  fix-qnx.patch
+"
